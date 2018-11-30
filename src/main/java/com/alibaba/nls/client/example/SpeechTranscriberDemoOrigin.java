@@ -16,7 +16,6 @@
 
 package com.alibaba.nls.client.example;
 
-import com.alibaba.nls.client.example.demo.AudioUtils;
 import com.alibaba.nls.client.protocol.InputFormatEnum;
 import com.alibaba.nls.client.protocol.NlsClient;
 import com.alibaba.nls.client.protocol.SampleRateEnum;
@@ -24,45 +23,37 @@ import com.alibaba.nls.client.protocol.asr.SpeechTranscriber;
 import com.alibaba.nls.client.protocol.asr.SpeechTranscriberListener;
 import com.alibaba.nls.client.protocol.asr.SpeechTranscriberResponse;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.TargetDataLine;
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Arrays;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * SpeechTranscriberWithMicrophoneDemo class
+ * SpeechTranscriberDemoOrigin class
  *
- * 使用麦克风音频流的实时音频流识别Demo
+ * 实时音频流识别Demo
  * @author siwei
  * @date 2018/6/25
  */
-public class SpeechTranscriberWithMicrophoneDemo {
+public class SpeechTranscriberDemoOrigin {
     private String appKey;
     private String accessToken;
     NlsClient client;
-    FileWriter out;
+    static FileWriter out;
 
-    public SpeechTranscriberWithMicrophoneDemo(String appKey, String token, String filePath) {
+    public SpeechTranscriberDemoOrigin(String appKey, String token) {
         this.appKey = appKey;
         this.accessToken = token;
         // Step0 创建NlsClient实例,应用全局创建一个即可,默认服务地址为阿里云线上服务地址
         client = new NlsClient(accessToken);
         try {
-            out = new FileWriter(filePath);
-        }catch (Exception e){
+            out = new FileWriter("D:\\songjunbao\\work\\code\\nls\\src\\main\\resources\\log2.txt", true);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public SpeechTranscriberListener getTranscriberListener() {
-
+    private static SpeechTranscriberListener getTranscriberListener() {
         SpeechTranscriberListener listener = new SpeechTranscriberListener() {
-
-
             // 识别出中间结果.服务端识别出一个字或词时会返回此消息.仅当setEnableIntermediateResult(true)时,才会有此类消息返回
             @Override
             public void onTranscriptionResultChange(SpeechTranscriberResponse response) {
@@ -79,9 +70,6 @@ public class SpeechTranscriberWithMicrophoneDemo {
             // 识别出一句话.服务端会智能断句,当识别到一句话结束时会返回此消息
             @Override
             public void onSentenceEnd(SpeechTranscriberResponse response) {
-                Integer beginTime = (Integer) response.payload.get("begin_time");
-                Integer costTime = response.getTransSentenceTime() - beginTime;
-
                 System.out.println("name: " + response.getName() +
                         // 状态码 20000000 表示正常识别
                         ", status: " + response.getStatus() +
@@ -90,28 +78,34 @@ public class SpeechTranscriberWithMicrophoneDemo {
                         // 当前句子的完整识别结果
                         ", result: " + response.getTransSentenceText() +
                         // 当前已处理的音频时长，单位是毫秒
-                        ", time: " + response.getTransSentenceTime() + "begin_time:"+beginTime + "cost_time:"+ costTime);
+                        ", time: " + response.getTransSentenceTime());
 
-
-                try{
-                    out.write(response.getTransSentenceText()+"\n ");
-                    out.flush();
-                }catch (Exception e){
+                try {
+                    out.write(response.getTransSentenceText());
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+
             }
             // 识别完毕
             @Override
             public void onTranscriptionComplete(SpeechTranscriberResponse response) {
                 System.out.println("name: " + response.getName() +
                         ", status: " + response.getStatus());
+
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         };
 
         return listener;
     }
 
-    public void process(byte[] bytes) {
+    public void process(InputStream ins) {
         SpeechTranscriber transcriber = null;
         try {
             // Step1 创建实例,建立连接
@@ -124,67 +118,49 @@ public class SpeechTranscriberWithMicrophoneDemo {
             // 是否返回中间识别结果
             transcriber.setEnableIntermediateResult(false);
             // 是否生成并返回标点符号
-            transcriber.setEnablePunctuation(true);
+            transcriber.setEnablePunctuation(false);
             // 是否将返回结果规整化,比如将一百返回为100
             transcriber.setEnableITN(true);
 
             // Step2 此方法将以上参数设置序列化为json发送给服务端,并等待服务端确认
             transcriber.start();
+            // Step3 语音数据来自声音文件用此方法,控制发送速率;若语音来自实时录音,不需控制发送速率直接调用 recognizer.sent(ins)即可
+            transcriber.send(ins);
+            // Step4 通知服务端语音数据发送完毕,等待服务端处理完成
 
-            // Step3 读取麦克风数据
-//            AudioFormat audioFormat = new AudioFormat(16000.0F, 16, 1, true, false);
-//            DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
-//            TargetDataLine targetDataLine = (TargetDataLine)AudioSystem.getLine(info);
-//            targetDataLine.open(audioFormat);
-//            targetDataLine.start();
-//            TargetDataLine targetDataLine = AudioUtils.getTargetDataLine();
-//            System.out.println("You can speak now!");
-//            int nByte = 0;
-//            final int bufSize = 6400;
-//            byte[] buffer = new byte[bufSize];
-//            while ((nByte = targetDataLine.read(buffer, 0, bufSize)) > 0) {
-//                // Step4 直接发送麦克风数据流
-//                System.out.println("------------ byte array");
-//                transcriber.send(buffer);
-//            }
-
-            transcriber.send(bytes);
-
-            // Step5 通知服务端语音数据发送完毕,等待服务端处理完成
             System.out.println("----------stop before");
             transcriber.stop();
             System.out.println("----------stop after");
         } catch (Exception e) {
             System.err.println(e.getMessage());
         } finally {
-            // Step6 关闭连接
+            // Step5 关闭连接
             if (null != transcriber) {
                 transcriber.close();
-            }
-
-            if (out != null){
-                try{
-                    out.close();
-                }catch (Exception io){
-                    io.printStackTrace();
-                }
             }
         }
     }
 
     public void shutdown() {
         client.shutdown();
-
     }
 
     public static void main(String[] args) {
 
-
         String appKey = SpeechProperties.APPKEY;
         String token = SpeechProperties.TOKEN;
 
-        SpeechTranscriberWithMicrophoneDemo demo = new SpeechTranscriberWithMicrophoneDemo(appKey, token, "D:\\songjunbao\\work\\code\\nls\\src\\main\\resources\\log.txt");
-        demo.process(new byte[100]);
+        SpeechTranscriberDemoOrigin demo = new SpeechTranscriberDemoOrigin(appKey, token);
+        InputStream ins = SpeechTranscriberDemoOrigin.class.getResourceAsStream("/sample.pcm");
+        if (null == ins) {
+            System.err.println("open the audio file failed!");
+            return;
+        }
+        demo.process(ins);
+
+        System.out.println("----------shutdown before");
         demo.shutdown();
+        System.out.println("----------shutdown after");
+
     }
 }

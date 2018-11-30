@@ -86,7 +86,7 @@ public class SpeechRecognizerDemo {
             // 设置音频采样率
             recognizer.setSampleRate(SampleRateEnum.SAMPLE_RATE_16K);
             // 设置是否返回中间识别结果
-            recognizer.setEnableIntermediateResult(true);
+            recognizer.setEnableIntermediateResult(false);
 
             // Step2 此方法将以上参数设置序列化为json发送给服务端,并等待服务端确认
             recognizer.start();
@@ -114,13 +114,16 @@ public class SpeechRecognizerDemo {
         String token = SpeechProperties.TOKEN;
 
         SpeechRecognizerDemo demo = new SpeechRecognizerDemo(appKey, token);
-        InputStream ins = SpeechRecognizerDemo.class.getResourceAsStream("/sh.pcm");
+        InputStream ins = SpeechRecognizerDemo.class.getResourceAsStream("/sample.pcm");
         if (null == ins) {
             System.err.println("open the audio file failed!");
             System.exit(-1);
         }
         demo.process(ins);
+        System.out.println("--------------------------------1");
         demo.shutdown();
+        System.out.println("--------------------------------2");
+
     }
 
 }

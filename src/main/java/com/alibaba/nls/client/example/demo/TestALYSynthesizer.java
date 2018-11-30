@@ -2,6 +2,7 @@ package com.alibaba.nls.client.example.demo;
 
 import com.alibaba.nls.client.example.SpeechProperties;
 import com.alibaba.nls.client.example.SpeechTranscriberDemo;
+import com.alibaba.nls.client.example.SpeechTranscriberDemoOrigin;
 
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;

@@ -29,7 +29,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 
 /**
- * SpeechTranscriberDemo class
+ * SpeechTranscriberDemoOrigin class
  *
  * 实时音频流识别Demo
  * @author siwei
@@ -152,7 +152,7 @@ public class SpeechTranscriberDemo {
         String token = SpeechProperties.TOKEN;
 
         SpeechTranscriberDemo demo = new SpeechTranscriberDemo(appKey, token);
-//        InputStream ins = SpeechTranscriberDemo.class.getResourceAsStream("/hello.wav");
+//        InputStream ins = SpeechTranscriberDemoOrigin.class.getResourceAsStream("/hello.wav");
 //        if (null == in) {
 //            System.err.println("open the audio file failed!");
 //            return;
