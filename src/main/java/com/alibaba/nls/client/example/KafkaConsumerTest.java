@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.alibaba.nls.client.example.demo.AudioUtils;
+import com.alibaba.nls.client.example.util.KafkaPropertiesFactory;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -28,10 +29,9 @@ import javax.sound.sampled.SourceDataLine;
  */
 public class KafkaConsumerTest implements Runnable {
 
-	private KafkaConsumer<String, byte[]> consumer;
+	private KafkaConsumer<String, byte[]>  consumer;
 	private ConsumerRecords<String, byte[]> msgList;
 	private  String topic;
-	private static final String GROUPID = "groupE4";
 
 	
 	public KafkaConsumerTest(String topicName) {
@@ -42,8 +42,6 @@ public class KafkaConsumerTest implements Runnable {
 	@Override
 	public void run() {
 		System.out.println("---------开始消费---------");
-		List<String> list=new ArrayList<String>();
-		List<Long> list2=new ArrayList<Long>();
 		try {
 			for (;;) {
 					msgList = consumer.poll(100);
@@ -58,11 +56,11 @@ public class KafkaConsumerTest implements Runnable {
 							e.printStackTrace();
 						}
 
-						String appKey = SpeechProperties.APPKEY;
-						String token = SpeechProperties.TOKEN;
-
-						SpeechTranscriberWithMicrophoneDemo demo = new SpeechTranscriberWithMicrophoneDemo(appKey, token, "D:\\songjunbao\\work\\code\\nls\\src\\main\\resources\\log.txt");
-						demo.process(record.value());
+//						String appKey = SpeechProperties.APPKEY;
+//						String token = SpeechProperties.TOKEN;
+//
+//						SpeechTranscriberWithMicrophoneDemo demo = new SpeechTranscriberWithMicrophoneDemo(appKey, token, "D:\\songjunbao\\work\\code\\nls\\src\\main\\resources\\log.txt");
+//						demo.process();
 //						demo.shutdown();
 
 					}
@@ -78,29 +76,8 @@ public class KafkaConsumerTest implements Runnable {
 	}
 	
 	private void init() {
-		Properties props = new Properties();
-		//kafka消费的的地址
-		props.put("bootstrap.servers",  "172.16.34.34:9092");
-		//组名 不同组名可以重复消费
-		props.put("group.id", GROUPID);
-		//是否自动提交
-		props.put("enable.auto.commit", "true");
-		props.put("auto.commit.interval.ms", "1000");
-		//超时时间
-		props.put("session.timeout.ms", "30000");
-		//一次最大拉取的条数
-		props.put("max.poll.records", 10);
-//		earliest当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，从头开始消费
-//		latest
-//		当各分区下有已提交的offset时，从提交的offset开始消费；无提交的offset时，消费新产生的该分区下的数据
-//		none
-//		topic各分区都存在已提交的offset时，从offset后开始消费；只要有一个分区不存在已提交的offset，则抛出异常
-		props.put("auto.offset.reset", "earliest");
 
-		//序列化
-		props.put("key.deserializer", StringDeserializer.class.getName());
-		props.put("value.deserializer", ByteArrayDeserializer.class.getName());
-		this.consumer = new KafkaConsumer<String, byte[]>(props);
+		this.consumer = new KafkaConsumer<String, byte[]>(KafkaPropertiesFactory.newConsumerProperties());
 		//订阅主题列表topic
 		this.consumer.subscribe(Arrays.asList(topic));
 		
@@ -110,7 +87,7 @@ public class KafkaConsumerTest implements Runnable {
 	
    
 	public static void main(String args[]) {
-		KafkaConsumerTest test1 = new KafkaConsumerTest("KAFKA_TEST2");
+		KafkaConsumerTest test1 = new KafkaConsumerTest("voice-topic");
 		Thread thread1 = new Thread(test1);
 		thread1.start();
 	}

@@ -167,6 +167,37 @@ public class FileUtils {
         }
     }
 
+
+    public static String convertFileToString(String fileName){
+        StringBuilder sb = new StringBuilder();
+        BufferedReader bufferedReader = null;
+        try {
+            bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "utf-8"));
+            String temp = null;
+            while ((temp = bufferedReader.readLine()) != null){
+                String line = temp.trim();
+                if (line.length() > 0){
+                    sb.append(line + "\n");
+                }
+
+            }
+
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            try {
+                if (bufferedReader != null)
+                    bufferedReader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return sb.toString();
+    }
+
+
+
     /**
      * 随机读取文件内容
      * @param fileName
@@ -329,20 +360,7 @@ public class FileUtils {
     }
 
     public static void main(String[] args) {
-        String fileName = "D:/xiaoi/XIDOC/poc/test.txt";
-        FileUtils.readFileByBytes(fileName);
-        System.out.println("-------------------------分割线-------------------------");
-        FileUtils.readFileByChars(fileName);
-        System.out.println("-------------------------分割线-------------------------");
-        FileUtils.readFileByLines(fileName);
-        System.out.println("-------------------------分割线-------------------------");
-        FileUtils.readFileByRandomAccess(fileName);
-        System.out.println("-------------------------分割线-------------------------");
-
-
-        String oldFile = "D:/xiaoi/XIDOC/poc/福州.txt";
-        String newFile = "D:/xiaoi/XIDOC/poc/fuzhou.txt";
-        FileUtils.gbChangeUtf(oldFile,newFile);
-
+        String content = convertFileToString("D:\\songjunbao\\work\\code\\nls\\src\\main\\resources\\log.txt");
+        System.out.println("--content:"+content);
     }
 }

@@ -111,7 +111,7 @@ public class SpeechTranscriberWithMicrophoneDemo {
         return listener;
     }
 
-    public void process(byte[] bytes) {
+    public void process() {
         SpeechTranscriber transcriber = null;
         try {
             // Step1 创建实例,建立连接
@@ -137,18 +137,17 @@ public class SpeechTranscriberWithMicrophoneDemo {
 //            TargetDataLine targetDataLine = (TargetDataLine)AudioSystem.getLine(info);
 //            targetDataLine.open(audioFormat);
 //            targetDataLine.start();
-//            TargetDataLine targetDataLine = AudioUtils.getTargetDataLine();
-//            System.out.println("You can speak now!");
-//            int nByte = 0;
-//            final int bufSize = 6400;
-//            byte[] buffer = new byte[bufSize];
-//            while ((nByte = targetDataLine.read(buffer, 0, bufSize)) > 0) {
-//                // Step4 直接发送麦克风数据流
-//                System.out.println("------------ byte array");
-//                transcriber.send(buffer);
-//            }
+            TargetDataLine targetDataLine = AudioUtils.getTargetDataLine();
+            System.out.println("You can speak now!");
+            int nByte = 0;
+            final int bufSize = 6400;
+            byte[] buffer = new byte[bufSize];
+            while ((nByte = targetDataLine.read(buffer, 0, bufSize)) > 0) {
+                // Step4 直接发送麦克风数据流
+                System.out.println("------------ byte array");
+                transcriber.send(buffer);
+            }
 
-            transcriber.send(bytes);
 
             // Step5 通知服务端语音数据发送完毕,等待服务端处理完成
             System.out.println("----------stop before");
@@ -184,7 +183,7 @@ public class SpeechTranscriberWithMicrophoneDemo {
         String token = SpeechProperties.TOKEN;
 
         SpeechTranscriberWithMicrophoneDemo demo = new SpeechTranscriberWithMicrophoneDemo(appKey, token, "D:\\songjunbao\\work\\code\\nls\\src\\main\\resources\\log.txt");
-        demo.process(new byte[100]);
+        demo.process();
         demo.shutdown();
     }
 }

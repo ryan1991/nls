@@ -10,7 +10,7 @@ public interface SpeechProperties {
 
     //项目
     String APPKEY = "zbqKe0SbgVLw33Xn";
-    String TOKEN = "504146165b4946ab925b9850be82a80e";
+    String TOKEN = "4fd953b0a39144d48e77cb903f88c6bb";
 
 
 
